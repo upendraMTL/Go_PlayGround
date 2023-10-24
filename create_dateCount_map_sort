@@ -1,0 +1,51 @@
+//create map of date with value ( holding count of subscription expired in future date ) 
+//sort the map and display as json which can be written as document to MongoDB
+
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+//model to save as bson into mongo where each values saved as bson
+type ExpiryForecastDay struct {
+	Day   time.Time `bson:"date"`
+	Count int32     `bson:"count"`
+}
+
+func main() {
+	days := make(map[time.Time]int32, 90)
+	now := time.Now()
+	fmt.Println("now date : ", now)
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	fmt.Println("Todays date : ", today)
+	nextDate := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, today.Location())
+	for i := 1; i < 5; i++ {
+		nextDate = nextDate.Add(24 * time.Hour)
+		days[nextDate] = 0
+	}
+
+	fmt.Println("map:", days)
+
+	keys := []time.Time{}
+	for key := range days {
+		keys = append(keys, key)
+	}
+
+	fmt.Println("Keys:", keys)
+
+	sort.Slice(keys, func(i, j int) bool { return keys[i].String() < keys[j].String() })
+	fmt.Println("sorted Keys:", keys)
+
+	expiryForecast := []ExpiryForecastDay{}
+	for _, k := range keys {
+		item := ExpiryForecastDay{
+			Day:   k,
+			Count: days[k],
+		}
+		expiryForecast = append(expiryForecast, item)
+	}
+
+	fmt.Println("expiryForecast ", expiryForecast)
+}
