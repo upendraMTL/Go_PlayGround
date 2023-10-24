@@ -14,6 +14,13 @@ type ExpiryForecastDay struct {
 	Count int32     `bson:"count"`
 }
 
+func isDateBefore(date1 time.Time, date2 time.Time) bool {
+	if date1.IsZero() {
+		return false
+	}
+	return date1.Before(date2)
+}
+
 func main() {
 	days := make(map[time.Time]int32, 90)
 	now := time.Now()
@@ -35,7 +42,7 @@ func main() {
 
 	fmt.Println("Keys:", keys)
 
-	sort.Slice(keys, func(i, j int) bool { return keys[i].String() < keys[j].String() })
+	sort.Slice(keys, func(i, j int) bool { return isDateBefore(keys[i], keys[j]) })
 	fmt.Println("sorted Keys:", keys)
 
 	expiryForecast := []ExpiryForecastDay{}
